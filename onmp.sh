@@ -43,6 +43,9 @@ url_Zblog="https://update.zblogcn.com/zip/Z-BlogPHP_1_5_2_1935_Zero.zip"
 # (10) DzzOffice (开源办公平台)
 url_DzzOffice="https://codeload.github.com/zyx0814/dzzoffice/zip/master"
 
+# (11) OneManager-php (OneManager-php)
+url_OneManager="https://github.com/ldxw/OneManager-php/archive/master.zip"
+
 # 通用环境变量获取
 get_env()
 {
@@ -424,6 +427,12 @@ OOO
 
 }
 
+# OneManager-php
+cat > "/opt/etc/nginx/conf/OneManager.conf" <<-\OOO
+rewrite ^(.*) /index.php?/$1 last;
+OOO
+
+
 ############## 重置、初始化MySQL #############
 init_sql()
 {
@@ -774,6 +783,7 @@ cat << AAA
 (8) Typecho (流畅的轻量级开源博客程序)
 (9) Z-Blog (体积小，速度快的PHP博客程序)
 (10) DzzOffice (开源办公平台)
+(11) OneManager (OneManager-php)
 (0) 退出
 AAA
 read -p "输入你的选择[0-11]: " input
@@ -788,6 +798,7 @@ case $input in
 8) install_typecho;;
 9) install_zblog;;
 10) install_dzzoffice;;
+11) install_OneManager;;
 0) exit;;
 *) echo "你输入的不是 0 ~ 10 之间的!"
 break;;
@@ -1137,6 +1148,30 @@ install_dzzoffice()
     echo "$name安装完成"
     echo "浏览器地址栏输入：$localhost:$port 即可访问"
     echo "DzzOffice应用市场中，某些应用无法自动安装的，请自行参看官网给的手动安装教程"
+}
+
+######## 安装OneManager ########
+install_OneManager()
+{
+    # 默认配置
+    filelink=$url_OneManager
+    name="OneManager"
+    dirname="OneManager-php-master"
+    hookdir=$dirname
+    port=91
+
+    # 运行安装程序 
+    web_installer
+    echo "正在配置$name..."
+    chmod -R 777 /opt/wwwroot/$webdir     # 目录权限看情况使用
+
+    # 添加到虚拟主机
+    add_vhost $port $webdir
+    sed -e "s/.*\#php-fpm.*/    include \/opt\/etc\/nginx\/conf\/php-fpm.conf\;/g" -i /opt/etc/nginx/vhost/$webdir.conf         # 添加php-fpm支持
+    sed -e "s/.*\#otherconf.*/    include \/opt\/etc\/nginx\/conf\/OneManager.conf\;/g" -i /opt/etc/nginx/vhost/$webdir.conf
+    onmp restart >/dev/null 2>&1
+    echo "$name安装完成"
+    echo "浏览器地址栏输入：$localhost:$port 即可访问"
 }
 
 ############# 添加到虚拟主机 #############
