@@ -37,8 +37,8 @@ Install()
 	mkdir -p /opt/onmp
 
     # 获取onmp脚本
-    #curl -kfsSL https://raw.githubusercontent.com/xzhih/ONMP/master/onmp.sh > /opt/onmp/onmp.sh
-    curl -kfsSL https://raw.githubusercontent.com/ldxw/ONMP/master/onmp.sh > /opt/onmp/onmp.sh
+    curl -kfsSL https://raw.githubusercontent.com/xzhih/ONMP/master/onmp.sh > /opt/onmp/onmp.sh
+    #curl -kfsSL https://raw.githubusercontent.com/ldxw/ONMP/master/onmp.sh > /opt/onmp/onmp.sh
     # curl -kfsSL http://192.168.4.126:4000/onmp.sh > /opt/onmp/onmp.sh
     chmod +x /opt/onmp/onmp.sh
 
