@@ -46,6 +46,9 @@ url_DzzOffice="https://codeload.github.com/zyx0814/dzzoffice/zip/master"
 # (11) OneManager-php (OneManager-php)
 url_OneManager="https://github.com/ldxw/OneManager-php/archive/master.zip"
 
+# (12) NotepadOnline (跨端笔记传输)
+url_NotepadOnline="https://github.com/ldxw/NotepadOnline/archive/master.zip"
+
 # 通用环境变量获取
 get_env()
 {
@@ -425,13 +428,21 @@ if (!-e $request_filename) {
     }
 OOO
 
-}
 
 # OneManager-php
 cat > "/opt/etc/nginx/conf/OneManager.conf" <<-\OOO
 rewrite ^(.*) /index.php?/$1 last;
 OOO
 
+# NotepadOnline
+cat > "/opt/etc/nginx/conf/NotepadOnline.conf" <<-\OOO
+rewrite ^/share/([^.]+)$ /share.php?f=$1;
+rewrite ^/([^.]+)$ /index.php?f=$1;
+
+#rewrite ^/([a-zA-Z0-9]+)$ /index.php?f=$1;
+OOO
+
+}
 
 ############## 重置、初始化MySQL #############
 init_sql()
@@ -521,6 +532,7 @@ sed -e "s/.*output_buffering = .*/output_buffering = 4096/g" -i /opt/etc/php.ini
 sed -e "s/.*post_max_size = .*/post_max_size = 8000M/g" -i /opt/etc/php.ini
 sed -e "s/.*max_execution_time = .*/max_execution_time = 2000 /g" -i /opt/etc/php.ini
 sed -e "s/.*upload_max_filesize.*/upload_max_filesize = 8000M/g" -i /opt/etc/php.ini
+#sed -e "s/.*display_errors.*/display_errors = off/g" -i /opt/etc/php.ini
 sed -e "s/.*listen.mode.*/listen.mode = 0666/g" -i /opt/etc/php7-fpm.d/www.conf
 
 # PHP配置文件
@@ -784,9 +796,10 @@ cat << AAA
 (9) Z-Blog (体积小，速度快的PHP博客程序)
 (10) DzzOffice (开源办公平台)
 (11) OneManager (OneManager-php)
+(12) NotepadOnline (跨端笔记传输)
 (0) 退出
 AAA
-read -p "输入你的选择[0-11]: " input
+read -p "输入你的选择[0-12]: " input
 case $input in
     1) install_phpmyadmin;;
 2) install_wordpress;;
@@ -799,8 +812,10 @@ case $input in
 9) install_zblog;;
 10) install_dzzoffice;;
 11) install_OneManager;;
+12) install_NotepadOnline;;
+
 0) exit;;
-*) echo "你输入的不是 0 ~ 10 之间的!"
+*) echo "你输入的不是 0 ~ 12 之间的!"
 break;;
 esac
 }
@@ -862,8 +877,9 @@ fi
                 unzip /opt/wwwroot/$name.$suffix -d /opt/wwwroot/$hookdir > /dev/null 2>&1
             fi
             
-            mv /opt/wwwroot/$dirname /opt/wwwroot/$webdir
+            mv /opt/wwwroot/$dirname/* /opt/wwwroot/$webdir && rm -rf /opt/wwwroot/$dirname
             echo "解压完成..."
+            
         fi
     fi
 
@@ -1169,6 +1185,30 @@ install_OneManager()
     add_vhost $port $webdir
     sed -e "s/.*\#php-fpm.*/    include \/opt\/etc\/nginx\/conf\/php-fpm.conf\;/g" -i /opt/etc/nginx/vhost/$webdir.conf         # 添加php-fpm支持
     sed -e "s/.*\#otherconf.*/    include \/opt\/etc\/nginx\/conf\/OneManager.conf\;/g" -i /opt/etc/nginx/vhost/$webdir.conf
+    onmp restart >/dev/null 2>&1
+    echo "$name安装完成"
+    echo "浏览器地址栏输入：$localhost:$port 即可访问"
+}
+
+######## NotepadOnline ########
+install_NotepadOnline()
+{
+    # 默认配置
+    filelink=$url_NotepadOnline
+    name="NotepadOnline"
+    dirname="NotepadOnline-master"
+    hookdir=$dirname
+    port=100
+
+    # 运行安装程序 
+    web_installer
+    echo "正在配置$name..."
+    chmod -R 777 /opt/wwwroot/$webdir     # 目录权限看情况使用
+
+    # 添加到虚拟主机
+    add_vhost $port $webdir
+    sed -e "s/.*\#php-fpm.*/    include \/opt\/etc\/nginx\/conf\/php-fpm.conf\;/g" -i /opt/etc/nginx/vhost/$webdir.conf         # 添加php-fpm支持
+    sed -e "s/.*\#otherconf.*/    include \/opt\/etc\/nginx\/conf\/NotepadOnline.conf\;/g" -i /opt/etc/nginx/vhost/$webdir.conf
     onmp restart >/dev/null 2>&1
     echo "$name安装完成"
     echo "浏览器地址栏输入：$localhost:$port 即可访问"
