@@ -154,8 +154,8 @@ init_onmp()
     echo 'unixsocket /opt/var/run/redis.sock' >> /opt/etc/redis.conf
     echo 'unixsocketperm 777' >> /opt/etc/redis.conf 
 
-    # 添加探针
-    cp /opt/onmp/tz.php /opt/wwwroot/default -R
+    # 添加探针和默认首页
+    cp /opt/onmp/tz.php /opt/wwwroot/default -R && cp /opt/onmp/index.html /opt/wwwroot/default -R
     add_vhost 81 default
     sed -e "s/.*\#php-fpm.*/    include \/opt\/etc\/nginx\/conf\/php-fpm.conf\;/g" -i /opt/etc/nginx/vhost/default.conf
     chmod -R 777 /opt/wwwroot/default
